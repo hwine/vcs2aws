@@ -1,0 +1,84 @@
+# Doc links in the script seem like a good idea for now:
+# - AWS AMI: http://aws.amazon.com/amazon-linux-ami/
+# - Ansible + Block Storage: http://docs.ansible.com/ec2_vol_module.html
+# - Ansible + EC2: http://docs.ansible.com/ec2_module.html
+# - Ansible + AWS in general: http://docs.ansible.com/list_of_cloud_modules.html
+# - AWS EBS: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-add-volume-to-instance.html
+
+# This seems to for running everything locally
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  vars:
+    ami_id: ami-e7527ed7
+    aws_region: us-west-2
+
+
+
+  tasks:
+
+    - name: provision instances
+      ec2:
+        # This is the ec2 module in use
+        # ansible honors your ~/.ssh/config file, so you can map the key to the host there
+        key_name: ffledgling-keys # How to give it the .pem key?
+        #group: ffledgling-test-machines # Not sure what group to put, or what group is
+        instance_type: t2.micro # use smallest possible instance type
+        region: "{{ aws_region }}"
+        image: "{{ ami_id }}" #ami-id, where do we get this from?
+        wait: True
+        exact_count: 1
+        group_id: sg-55909430
+        count_tag:
+            Name: ansible-test
+        instance_tags:
+            Name: ansible-test
+      register: ec2var
+
+    - debug: var=ec2var
+
+    #- name: volume debugging
+    #  debug: var=item
+    #  with_items: ec2var.instances
+
+    - name: attach disks to ec2 instances
+      ec2_vol:
+        instance: "{{ item.id }}"
+        volume_size: 5 # conservative, increase for production
+        volume_type: gp2 # SSD, use standard for magnetic
+        device_name: /dev/xvdf
+        state: present
+        #name: ansible_test_disk
+        region: "{{ aws_region }}"
+      with_items: ec2var.tagged_instances
+      register: ec2_volvar
+
+    - name: volume info
+      debug: var=ec2_volvar
+
+    - name: Add instances' public IPs to a host # Use this for bulk management of the instances
+      add_host: hostname={{ item.public_ip }} groups=ec2hosts
+      with_items: ec2var.tagged_instances
+
+
+- hosts: ec2hosts
+  name: configuration
+  user: ec2-user
+  gather_facts: false # setting to true fails because, we don't have the right ssh-key pair set
+  sudo: true
+
+  tasks:
+    - set_fact:
+        ansible_ssh_private_key_file: ~/.ssh/ffledgling-keys.pem
+
+    - name: format disks
+      # Should format only the ones that are freshly attached, not all of them
+      shell: sudo mkfs.ext4 -N $(( $(sudo mkfs.ext4 -n /dev/xvdf | grep -P -o "\d+ inodes" | cut -f 1 -d ' ') * 4 )) /dev/xvdf
+
+    - name: mount disks
+      # Should mount/should ensure mounted for all machines
+      mount:
+          state: mounted
+          name: /opt/vcs2vcs
+          src: /dev/xvdf
+          fstype: ext4
