@@ -1,0 +1,38 @@
+# Configuration file for VCS2AWS
+# This is what is ensured in AWS
+#
+# Misc Info:
+# All instances are tagged as belonging to the class "vcs2vcs"
+---
+
+instances:
+  - name: "test1"
+    instance_type: t2.micro
+    system: "legacy"
+
+  - name: "test2"
+    instance_type: t2.micro
+    system: "modern"
+
+
+volumes:
+
+  - name: "test1"
+    system: "legacy"
+    volume_size: 5 # conservative, increase for production
+    volume_type: gp2 # SSD, use standard for magnetic
+
+  - name: "test2"
+    system: "modern"
+    volume_size: 5 # conservative, increase for production
+    volume_type: gp2 # SSD, use standard for magnetic
+
+
+# Not sure what will happen if some of these are changed and playbook is re-run on existing instances, will probably fail
+aws_config:
+  # AMI-ID to use for base image
+  image: ami-e7527ed7
+  # Security Group ID
+  group_id: sg-55909430
+  # AWS region to use
+  region: us-west-2

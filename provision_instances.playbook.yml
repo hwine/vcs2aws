@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  connection: local # So that is runs directly on local machine instead of over SSH
+
+  vars_files:
+    - config.yml
+  
+  tasks:
+    - name: debug vars
+      debug: var=instances
+
+    - name: ensure all instances exist
+      ec2: 
+        instance_type: "{{ item.instance_type }}" # use smallest possible instance type
+        region: "{{ aws_config.region }}"
+        image: "{{ aws_config.image }}" #ami-id, where do we get this from?
+        wait: True
+        exact_count: 1
+        group_id: "{{ aws_config.group_id }}"
+        count_tag:
+            name: "{{ item.name }}"
+        instance_tags:
+            name: "{{ item.name }}"
+            system: "{{ item.system }}"
+            class: "vcs2vcs"
+      with_items: instances
+
