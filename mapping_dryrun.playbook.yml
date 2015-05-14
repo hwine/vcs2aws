@@ -1,0 +1,65 @@
+---
+
+#- hosts: tag_class_vcs2vcs
+- hosts: tag_Name_ffledgling_test
+  user: ec2-user
+  vars_files:
+    - config.yml
+
+  tasks:
+    - name: set private_key
+      set_fact:
+        ansible_ssh_private_key_file: ~/.ssh/ffledgling-keys.pem
+
+    - name: gather facts
+      action: ec2_facts
+      register: ec2facts
+
+    - name: print instance info
+      debug: var=ec2facts
+
+    - name: get instance tags
+      ec2_tag: 
+        # These aws_*_key needed here because of https://github.com/ansible/ansible/issues/9984
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        resource: "{{ ec2facts.ansible_facts.ansible_ec2_instance_id }}"
+        region: "{{ ec2facts.ansible_facts.ansible_ec2_placement_region }}"
+        state: list
+      register: ec2tags
+
+    - name: print tag info
+      debug: var=ec2tags
+
+    - name: get volumes attached
+      ec2_vol:
+        # These aws_*_key needed here because of https://github.com/ansible/ansible/issues/9984
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        state: list
+        #instance: "{{ ec2facts.ansible_facts.ansible_ec2_instance_id }}"
+        region: "{{ ec2facts.ansible_facts.ansible_ec2_placement_region }}"
+      register: ec2volinfo
+
+    - name: print vol info
+      debug: var=ec2volinfo
+
+
+    - name: get volumes tags
+      ec2_tag: 
+        # These aws_*_key needed here because of https://github.com/ansible/ansible/issues/9984
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        resource: "{{ item.id }}"
+        # Not use item.zone, because item.zone is unacceptable subset of region to ansible apparently (us-west-2a vs us-west-2)
+        region: "{{ item.zone }}"
+        region: "{{ ec2facts.ansible_facts.ansible_ec2_placement_region }}"
+        state: list
+      with_items: ec2volinfo.volumes
+      register: ec2voltags
+
+    - name: print vol tag info
+      debug: var=ec2voltags
+
+
+

@@ -1,0 +1,2 @@
+- [ ] Figure out a way to query Volumes in EC2
+- [ ] Use this list to actuall figure out how the current mapping is correct

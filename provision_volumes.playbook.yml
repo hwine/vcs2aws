@@ -1,0 +1,17 @@
+---
+
+- hosts: localhost
+  connection: local
+  vars_files:
+    - config.yml
+  tasks:
+
+    - name: provision volumes
+      ec2_vols:
+        volume_size: "{{ item.volume_size }}"  # conservative, increase for production
+        volume_type: "{{ item.volume_type }}" # SSD, use standard for magnetic
+        device_name: /dev/xvdf
+        state: present
+        #name: ansible_test_disk
+        region: "{{ aws_config.region }}"
+      with_items: volumes
