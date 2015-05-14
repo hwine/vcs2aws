@@ -11,12 +11,13 @@
 
     - name: ensure all instances exist
       ec2: 
-        instance_type: "{{ item.instance_type }}" # use smallest possible instance type
-        region: "{{ aws_config.region }}"
-        image: "{{ aws_config.image }}" #ami-id, where do we get this from?
-        wait: True
         exact_count: 1
         group_id: "{{ aws_config.group_id }}"
+        image: "{{ aws_config.image }}" #ami-id, where do we get this from?
+        instance_type: "{{ item.instance_type }}" # use smallest possible instance type
+        key_name: "{{ aws_config.key_name }}" # How to give it the .pem key?
+        region: "{{ aws_config.region }}"
+        wait: True
         count_tag:
             name: "{{ item.name }}"
         instance_tags:

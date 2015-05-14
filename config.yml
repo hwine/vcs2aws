@@ -2,7 +2,10 @@
 # This is what is ensured in AWS
 #
 # Misc Info:
-# All instances are tagged as belonging to the class "vcs2vcs"
+#  - All instances are tagged as belonging to the class "vcs2vcs"
+#  - All volumes are mounted on /dev/xvdf for now, this will cause trouble when
+#    multiple volumes are mounted to the same instances, in such a case, specify
+#    the mount point via this config and modify the other playbooks accordingly
 ---
 
 instances:
@@ -36,3 +39,4 @@ aws_config:
   group_id: sg-55909430
   # AWS region to use
   region: us-west-2
+  key_name: ffledgling-keys
