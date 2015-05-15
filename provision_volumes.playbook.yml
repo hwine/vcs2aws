@@ -7,7 +7,7 @@
   tasks:
 
     - name: provision volumes
-      ec2_vols:
+      ec2_vol:
         volume_size: "{{ item.volume_size }}"  # conservative, increase for production
         volume_type: "{{ item.volume_type }}" # SSD, use standard for magnetic
         device_name: /dev/xvdf
