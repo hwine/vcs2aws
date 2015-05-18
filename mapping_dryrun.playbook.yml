@@ -1,3 +1,7 @@
+# The problem with having a playbook like this is that, if any part fails,
+# re-running it will be a problem without actually resetting everything back to
+# scratch.
+# For now this needs to be done manually, and is a pain.
 ---
 
 #- hosts: tag_class_vcs2vcs
@@ -37,7 +41,7 @@
         aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
         state: present
-        name: "{{ item.name }}"
+        name: "{{ item.name }}" # We need the 'Name' tag here, need to figure out what to do
         region: "{{ aws_config.region }}"
       with_items: volumes
       when: ec2tags.tags.name == item.name
@@ -70,8 +74,40 @@
       when: (item.failed is defined) and (item.failed == true)
       register: createdmountedvols
 
-    - name: print everything
+    - name: print mounted vols info
       debug: var=createdmountedvols
+
+    - name: debug items
+      debug: var=item
+      when: item|success
+      with_items: createdmountedvols.results
+      register: ec2voltags
+
+    # Works till here
+    #
+################################################################################   
+    - name: tag the volumes after creation
+      ec2_tag: 
+        # These aws_*_key needed here because of https://github.com/ansible/ansible/issues/9984
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        resource: "{{ item.volume_id }}"
+        # Not use item.zone, because item.zone is unacceptable subset of region to ansible apparently (us-west-2a vs us-west-2)
+        region: "{{ aws_config.region}}"
+        state: present
+        tags:
+            # Having both 'Name' and 'name' is not a mistake, 'Name' is need for some of the Amazon and Ansible APIs to work properly
+            # For example to mount existing volume by name
+            Name: "{{ item.item.item.name }}"
+            name: "{{ item.item.item.name }}"
+            system: "{{ item.item.item.system }}"
+            class: "vcs2vcs"
+      when: (item|success) and (item.skipped is not defined)
+      with_items: createdmountedvols.results
+      register: ec2voltags
+    
+    - name: print vol tag info
+      debug: var=ec2voltags
 
       # Not needed for now, trying a different approach
 
