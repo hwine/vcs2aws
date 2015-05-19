@@ -17,10 +17,12 @@
         instance_type: "{{ item.instance_type }}" # use smallest possible instance type
         key_name: "{{ aws_config.key_name }}" # How to give it the .pem key?
         region: "{{ aws_config.region }}"
+        zone: "{{ aws_config.zone }}"
         wait: True
         count_tag:
             name: "{{ item.name }}"
         instance_tags:
+            Name: "{{ item.name }}"
             name: "{{ item.name }}"
             system: "{{ item.system }}"
             class: "vcs2vcs"

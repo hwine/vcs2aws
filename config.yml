@@ -39,4 +39,5 @@ aws_config:
   group_id: sg-55909430
   # AWS region to use
   region: us-west-2
+  zone: us-west-2b
   key_name: ffledgling-keys

@@ -112,10 +112,26 @@
     - name: print vol tag info
       debug: var=ec2voltags
 
+
+    - name: format freshly created volumes
+      # Should format only the ones that are freshly attached, not all of them
+      shell: sudo mkfs.ext4 -N $(( $(sudo mkfs.ext4 -n /dev/xvdf | grep -P -o "\d+ inodes" | cut -f 1 -d ' ') * 4 )) "{{ item.device }}"
+      when: (item|success) and (item.skipped is not defined)
+      with_items: createdmountedvols.results
+      register: formattedvols
+
     # Works till here
     #
 ################################################################################   
 
+    #- name: mount disks
+    #  # Should mount/should ensure mounted for all machines
+    #  mount:
+    #      state: mounted
+    #      name: /opt/vcs2vcs
+    #      src: /dev/xvdf
+    #      fstype: ext4
+      
       # Not needed for now, trying a different approach
 
       #    - name: get volumes attached
