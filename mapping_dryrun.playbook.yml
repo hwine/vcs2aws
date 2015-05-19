@@ -120,17 +120,21 @@
       with_items: createdmountedvols.results
       register: formattedvols
 
+
+    - name: mount disks
+      sudo: true
+      # Should mount/should ensure mounted for all machines
+      # For now mounting only /dev/xvdf to /opt/vcs2vcs
+      # TODO: Mount disks to mount-pts mentioned in config.yml (missing atm)
+      mount:
+          state: mounted
+          name: /opt/vcs2vcs
+          src: /dev/xvdf
+          fstype: ext4
+
     # Works till here
     #
 ################################################################################   
-
-    #- name: mount disks
-    #  # Should mount/should ensure mounted for all machines
-    #  mount:
-    #      state: mounted
-    #      name: /opt/vcs2vcs
-    #      src: /dev/xvdf
-    #      fstype: ext4
       
       # Not needed for now, trying a different approach
 
