@@ -42,7 +42,11 @@
     - name: hand over /opt/vcs2vcs to user vcs2vcs
       # Explicitly *not* adding -R incase someone re-runs when there's actually
       # folders from other users in /opt/vcs2vcs, safer option for now
-      command: chown vcs2vcs:vcs2vcs /opt/vcs2vcs
+      file: 
+        path: /opt/vcs2vcs
+        group: vcs2vcs
+        owner: vcs2vcs
+        state: directory
 
 - name: setup user account
   hosts: tag_system_legacy
@@ -61,6 +65,18 @@
         - "dulwich==0.9.8"
         - "argparse==1.2.1"
         - "http://pypi.pub.build.mozilla.org/pub/hg-git-0.4.0-moz2.tar.gz"
+
+    - name: setup directories on data-disk (/opt/vcs2vcs/)
+      file:
+        path: "/opt/vcs2vcs/{{item}}"
+        state: directory
+        force: true
+        mode: 0755
+      with_items:
+        - "etc"
+        - "logs"
+        - "repos"
+        - "staging"
 
     - name: setup symlinks from ~ to data-disk (/opt/vcs2vcs/)
       file:
@@ -104,19 +120,31 @@
         mode: 0644
 
     - name: setup ssh (part 1/2)
-      file: dest=~vcs2vcs/.ssh state=directory mode=0700
+      file: dest=~/.ssh state=directory mode=0700
 
     - name: setup ssh (part 2/2)
-      copy: dest=~vcs2vcs/.ssh/config mode=0600 src=files/ssh_config
-
-################################################################################
-# Works till here ##############################################################
-################################################################################
+      copy: dest=~/.ssh/config mode=0600 src=files/ssh_config
 
     - name: install configs repo
       # this should go on data disk
       hg: >
-        dest=~vcs2vcs/etc
+        dest=~/etc
         repo=https://hg.mozilla.org/users/hwine_mozilla.com/repo-sync-configs/
-        executable=~vcs2vcs/venv/hg/bin/hg
+        executable=~/venv/hg/bin/hg
         force=yes
+    - name: forward email
+      shell: echo asingh+vcs2vcs@mozilla.com >~vcs2vcs/.forward
+      args:
+        creates: ~vcs2vcs/.forward
+
+    - name: setup cronjobs
+      sudo_user: root
+      copy: dest=/etc/cron.d/vcs2vcs.cron src=files/legacy_crontab
+
+    - name: setup log rotation
+      sudo_user: root
+      file: dest=/etc/logrotate.d/logrotate-legacy.conf src=~vcs2vcs/etc/logrotate-legacy.conf state=link
+
+################################################################################
+# Works till here ##############################################################
+################################################################################
