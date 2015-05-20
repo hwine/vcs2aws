@@ -4,7 +4,7 @@
 ---
 - name: Base OS steup
   hosts: tag_system_legacy
-  user: ec2-user
+  remote_user: ec2-user
   sudo: true
 
   tasks:
@@ -13,7 +13,7 @@
     - name: install git; we need git version 1.7.10.1, but use latest
       yum: name=git state=present
 
-    # Required for mercurial compile
+    # Required for mercurial (and others) compile
     - name: install gcc; 
       yum: name=gcc state=present
 
@@ -24,7 +24,8 @@
         - python27-pip
         - python27-devel
 
-    - pip: name=virtualenv state=present
+    - name: install virtualenv 
+      pip: name=virtualenv state=present
 
     # Changed home to /home/vcs2vcs/ instead of /opt/vcs2vcs for better data,
     # code and user-dir separation
@@ -43,22 +44,79 @@
       # folders from other users in /opt/vcs2vcs, safer option for now
       command: chown vcs2vcs:vcs2vcs /opt/vcs2vcs
 
-################################################################################
-# Works till here ##############################################################
-################################################################################
-
 - name: setup user account
   hosts: tag_system_legacy
-  user: ec2-user
+  remote_user: ec2-user
   sudo: true
   sudo_user: vcs2vcs
+
   tasks:
+    # Changing venv to lie in ~/ than in /opt/vcs2vcs, differs from vcs-sync-ops
     - name: create venv
       pip:
-        virtualenv: /opt/vcs2vcs/venv/hg
+        virtualenv: ~/venv/hg
         name: "{{ item }}"
       with_items:
         - "http://mercurial.selenic.com/release/mercurial-2.2.1.tar.gz"
         - "dulwich==0.9.8"
         - "argparse==1.2.1"
         - "http://pypi.pub.build.mozilla.org/pub/hg-git-0.4.0-moz2.tar.gz"
+
+    - name: setup symlinks from ~ to data-disk (/opt/vcs2vcs/)
+      file:
+        src: "/opt/vcs2vcs/{{item}}"
+        dest: "~/{{item}}"
+        state: link
+        force: true
+      with_items:
+        - "etc"
+        - "logs"
+        - "repos"
+        - "staging"
+
+- name: setup vcs-sync requirements
+  hosts: tag_system_legacy
+  remote_user: ec2-user
+  sudo: true
+  sudo_user: vcs2vcs
+  tasks:
+
+    # Chnaged default destination from ~vcs2vcs/bin to ~/bin
+    - name: install scripts repo
+      hg:
+        dest: ~/bin
+        repo: https://hg.mozilla.org/users/hwine_mozilla.com/repo-sync-tools/
+        executable: ~/venv/hg/bin/hg
+        force: yes
+
+    - name: install symlinks
+      file: src=~/venv/hg/bin/{{ item }} dest=~/bin/{{ item }} state=link force=yes
+      with_items:
+        - hg
+        - python
+
+    # Copy a local bash_profile instead of appending to the existing one,
+    # because the existing one already has other things in it.
+    - name: copy local bash_profile with PATH changes
+      copy:
+        dest: ~/.bash_profile
+        src: files/bash_profile
+        mode: 0644
+
+    - name: setup ssh (part 1/2)
+      file: dest=~vcs2vcs/.ssh state=directory mode=0700
+
+    - name: setup ssh (part 2/2)
+      copy: dest=~vcs2vcs/.ssh/config mode=0600 src=files/ssh_config
+
+################################################################################
+# Works till here ##############################################################
+################################################################################
+
+    - name: install configs repo
+      # this should go on data disk
+      hg: >
+        dest=~vcs2vcs/etc
+        repo=https://hg.mozilla.org/users/hwine_mozilla.com/repo-sync-configs/
+        executable=~vcs2vcs/venv/hg/bin/hg
+        force=yes

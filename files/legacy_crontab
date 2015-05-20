@@ -1,0 +1,10 @@
+MAILTO=vcs2vcs
+PATH=/opt/vcs2vcs/bin:/usr/bin:/bin
+#min, hr, date, month, dow, user, command
+
+# bandaid alerting
+7,27,47 * * * * vcs2vcs ~vcs2vcs/bin/check_process_delay --fix
+@hourly $HOME/bin/alert_major_errors --email release+vcs2vcs@mozilla.com
+
+# update l10n & gaia mapfiles as needed
+*/5 * * * * vcs2vcs ~vcs2vcs/bin/combine_mapfiles; ~vcs2vcs/bin/combine_mapfiles --prefix integration-gaia --master gaia-mapfile

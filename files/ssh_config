@@ -1,0 +1,15 @@
+Host git.m.o
+    HostName git.mozilla.org
+    IdentityFile $HOME/.ssh/vcs-sync_rsa
+    User gitolite3
+Host hg.m.o
+    HostName hg.mozilla.org
+    IdentityFile $HOME/.ssh/vcs-sync_rsa
+    User vcs-sync@mozilla.com
+Host mirror_writer
+    # staging server
+    HostName git1.stage.dmz.scl3.mozilla.com
+    User gitolite
+Host *
+    # avoid disconnects on large pushes
+    ServerAliveInterval 300
