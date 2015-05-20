@@ -1,0 +1,64 @@
+# Everything copied over from playbooks in https://github.com/hwine/vcs-sync-ops
+# and then modified for compatibility
+# Changes from originals, noted with reasons inline
+---
+- name: Base OS steup
+  hosts: tag_system_legacy
+  user: ec2-user
+  sudo: true
+
+  tasks:
+
+
+    - name: install git; we need git version 1.7.10.1, but use latest
+      yum: name=git state=present
+
+    # Required for mercurial compile
+    - name: install gcc; 
+      yum: name=gcc state=present
+
+    # Package names changed here for yum
+    - name: install python extras
+      yum: name={{ item }} state=present
+      with_items:
+        - python27-pip
+        - python27-devel
+
+    - pip: name=virtualenv state=present
+
+    # Changed home to /home/vcs2vcs/ instead of /opt/vcs2vcs for better data,
+    # code and user-dir separation
+    - name: create user
+      user:
+        name: vcs2vcs 
+        createhome: True
+        shell: /bin/bash
+        state: present
+
+    - name: disable direct login
+      command: passwd -l vcs2vcs
+
+    - name: hand over /opt/vcs2vcs to user vcs2vcs
+      # Explicitly *not* adding -R incase someone re-runs when there's actually
+      # folders from other users in /opt/vcs2vcs, safer option for now
+      command: chown vcs2vcs:vcs2vcs /opt/vcs2vcs
+
+################################################################################
+# Works till here ##############################################################
+################################################################################
+
+- name: setup user account
+  hosts: tag_system_legacy
+  user: ec2-user
+  sudo: true
+  sudo_user: vcs2vcs
+  tasks:
+    - name: create venv
+      pip:
+        virtualenv: /opt/vcs2vcs/venv/hg
+        name: "{{ item }}"
+      with_items:
+        - "http://mercurial.selenic.com/release/mercurial-2.2.1.tar.gz"
+        - "dulwich==0.9.8"
+        - "argparse==1.2.1"
+        - "http://pypi.pub.build.mozilla.org/pub/hg-git-0.4.0-moz2.tar.gz"

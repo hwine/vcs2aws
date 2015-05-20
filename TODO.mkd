@@ -2,3 +2,9 @@
 - [ ] Use this list to actuall figure out how the current mapping is correct
 - [ ] Add force command to ssh
     - [ ] rsync -nvv ~/repos/ host:host1/
+
+- [ ] Start a wiki for the project
+    - [ ] List out steps
+    - [ ] List out assumptions
+    - [ ] List out caveats
+    - [ ] List out scenarios handled
