@@ -8,3 +8,14 @@
     - [ ] List out assumptions
     - [ ] List out caveats
     - [ ] List out scenarios handled
+
+
+- [ ] Pointers:
+    - [ ] Use remote_user instead of user
+    - [ ] Try to use {{ lookup ... }} instead of ~ in playbooks
+
+- [ ] Setup proper SSH keys with restricted command= syntax for copying data between instances
+
+
+- Possible Gotchas:
+    - [ ] .git/configs in repos are soft-linked to /opt/vcs2vcs/etc/REPO_NAME/config/ , this might be a problem later
