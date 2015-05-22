@@ -19,3 +19,7 @@
 
 - Possible Gotchas:
     - [ ] .git/configs in repos are soft-linked to /opt/vcs2vcs/etc/REPO_NAME/config/ , this might be a problem later
+
+- Other playbooks needed:
+    - [ ] Playbook to pull down things safely
+    - [ ] Playbook to snapshot things regularly/preidoically
