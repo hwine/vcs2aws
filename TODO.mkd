@@ -19,7 +19,11 @@
 
 - Possible Gotchas:
     - [ ] .git/configs in repos are soft-linked to /opt/vcs2vcs/etc/REPO_NAME/config/ , this might be a problem later
+    - [ ] Changing config for an instance and re-running the the instance does not necessarily update the config on AWS for a running instance (eg. changing a security group)
 
 - Other playbooks needed:
     - [ ] Playbook to pull down things safely
     - [ ] Playbook to snapshot things regularly/preidoically
+
+
+- Questions:

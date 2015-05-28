@@ -9,7 +9,7 @@
 ---
 
 instances:
-  - name: "test1"
+  - name: "vcs-sync legacy"
     instance_type: c4.large
     system: "legacy"
 
@@ -36,7 +36,8 @@ aws_config:
   # AMI-ID to use for base image
   image: ami-e7527ed7
   # Security Group ID
-  group_id: sg-55909430
+  #group_id: sg-55909430 # HTTP(s) and SSH
+  group_id: sg-64d7cd01 # moco_only_ssh
   # AWS region to use
   region: us-west-2
   zone: us-west-2b
