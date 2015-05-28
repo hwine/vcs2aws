@@ -1,0 +1,12 @@
+# hosts as defined in my personal ~/.ssh/config
+[non_aws_legacy]
+gd3
+gd1
+
+[aws_legacy]
+vsl
+
+[misc]
+localhost   ansible_connection=local
+
+# vim: ft=conf :
