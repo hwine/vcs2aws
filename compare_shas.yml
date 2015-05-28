@@ -1,0 +1,38 @@
+#Grab map files from legacy servers, and compare.
+
+---
+
+- hosts: non_aws_legacy:aws_legacy
+  become: yes
+  become_user: vcs2vcs
+  tasks:
+    - name: pack mapfiles
+      shell: tar czf /tmp/ansible.tgz -C /tmp/vcs-sync *-mapfile
+      args:
+        creates: /tmp/ansible.tgz
+    - name: fetch created tarball
+      fetch: 
+        src: /tmp/ansible.tgz
+        dest: fetch/{{ inventory_hostname }}.mapfile.tgz
+        flat: yes
+        fail: yes
+    - name: remove file
+      file: >
+        path=/tmp/ansible.tgz
+        state=absent
+
+- hosts: localhost
+  tasks:
+    - file: path=fetch/prod state=directory
+    - name: expand production files
+      command: tar xzf fetch/{{ item }}.mapfile.tgz -C fetch/prod
+      with_items: 
+        - gd1
+        - gd3
+    - file: path=fetch/stage state=directory
+    - name: expand staging files
+      command: tar xzf fetch/{{ item }}.mapfile.tgz -C fetch/stage
+      with_items: 
+        - vsl
+    - name: checking for diffs
+      command: diff -r --brief fetch/prod fetch/stage
