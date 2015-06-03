@@ -14,20 +14,20 @@ instances:
     system: "legacy"
 
   - name: "test2"
-    instance_type: t2.micro
+    instance_type: t2.medium
     system: "modern"
 
 
 volumes:
 
-  - name: "test1"
+  - name: "vcs-sync legacy"
     system: "legacy"
-    volume_size: 250 # conservative, increase for production
+    volume_size: 250 # for production
     volume_type: gp2 # SSD, use standard for magnetic
 
   - name: "test2"
     system: "modern"
-    volume_size: 5 # conservative, increase for production
+    volume_size: 250 # for production
     volume_type: gp2 # SSD, use standard for magnetic
 
 

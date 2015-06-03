@@ -1,0 +1,85 @@
+---
+- name: Base OS steup
+  hosts: tag_system_modern
+  remote_user: ec2-user
+  sudo: true
+
+  tasks:
+
+
+    # Install required packages
+    # Using https://bugzil.la/924716 as reference
+    - name: install requiered packages; 
+      yum: 
+        name: "{{item}}"
+        state: present
+      with_items:
+        - gcc
+        - git
+        - mercurial
+        - postfix
+        - ca-certificates
+
+    - name: remove ssmtp in favour of postfix
+      yum:
+        name: ssmtp
+        state: absent
+
+    # Package names changed here for yum
+    - name: install python extras
+      yum: name={{ item }} state=present
+      with_items:
+        - python27-pip
+        - python27-devel
+
+    - name: install virtualenv 
+      pip: name=virtualenv state=present
+
+    # Changed home to /home/vcs2vcs/ instead of /opt/vcs2vcs for better data,
+    # code and user-dir separation
+    - name: create user
+      user:
+        name: vcs2vcs 
+        createhome: True
+        shell: /bin/bash
+        state: present
+
+    - name: disable direct login
+      command: passwd -l vcs2vcs
+
+    - name: hand over /opt/vcs2vcs to user vcs2vcs
+      # Explicitly *not* adding -R incase someone re-runs when there's actually
+      # folders from other users in /opt/vcs2vcs, safer option for now
+      file: 
+        path: /opt/vcs2vcs
+        group: vcs2vcs
+        owner: vcs2vcs
+        state: directory
+
+- name: setup application requirements
+  hosts: tag_system_modern
+  remote_user: ec2-user
+  sudo: true
+  sudo_user: vcs2vcs
+
+  tasks:
+
+    - name: ensure directories exist
+      file:
+        path: "/opt/vcs2vcs/{{ item }}"
+        state: directory
+      with_items:
+        - vcs_sync
+        - vcssync1
+        - vcssync2
+
+    - name: setup symlinks from ~vcs2vcs to data-disk (/opt/vcs2vcs/)
+      file:
+        src: "/opt/vcs2vcs/{{ item }}"
+        dest: "~/{{ item }}"
+        state: link
+        force: true
+      with_items:
+        - vcs_sync
+        - vcssync1
+        - vcssync2
