@@ -4,7 +4,6 @@
 # TODO: Add usage()
 
 #set -x
-exec 2>&-
 
 # Coloured logging
 info() {
@@ -41,6 +40,10 @@ SITE1_USER="ec2-user"
 SITE2_USER="vcs2vcs"
 
 var_check
+
+# stderr messes up output, close it, now that we're done with our own
+# message
+exec 2>&-
 
 # Assumes l10n occurs in name
 for dir in $(ssh -t ec2-user@$SITE1_IP "sudo ls $SITE1 | col | grep l10n")
