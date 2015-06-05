@@ -1,11 +1,10 @@
 #!/bin/bash
 # Script to quickly spot check Modern b/w AWS and production
-# expects $SRC_IP and $DST_IP to be exported, or set inside the script before use.
+# expects $SITE1_IP and $SITE2_IP to be exported, or set inside the script before use.
 # TODO: Add usage()
 
 #set -x
-
-exec 2<&-
+exec 2>&-
 
 # Coloured logging
 info() {
@@ -18,24 +17,39 @@ warn() {
     echo "$(tput setaf 1)$*$(tput sgr0)";
 }
 
+var_check() {
 
-#SRC_IP= # production
-#DST_IP= # AWS
+    for v in SITE1_IP SITE2_IP SITE1 SITE2
+    do
+        if [[ ! -v "$v" ]]
+        then
+            warn "\$$v not set."
+            # usage
+            exit 1
+        fi
+    done
+}
 
-SRC="/home/ec2-user/live/vcs_sync/build/target"
-DST="/home/vcs2vcs/vcs_sync/build/target"
 
-#for dir in $(ls $SRC | grep l10n) # Assumes l10n occurs in name
-for dir in $(ssh -t ec2-user@$SRC_IP "sudo ls $SRC | grep l10n")
+#SITE1_IP= # production
+#SITE2_IP= # AWS
+
+SITE1="/home/ec2-user/live/vcs_sync/build/target"
+SITE2="/home/vcs2vcs/vcs_sync/build/target"
+
+var_check
+
+# Assumes l10n occurs in name
+for dir in $(ssh -t ec2-user@$SITE1_IP "sudo ls $SITE1 | col | grep l10n")
 do
 
     dir=$(echo $dir | tr -d [:space:])
     info "Checking $dir"
-    src_commit=$(ssh -t ec2-user@$SRC_IP sudo git -C $SRC/$dir show HEAD --stat --no-color | grep commit | tr '[:space:]' '\n' | grep -v commit | tr -d '[:space:]')
-    dst_commit=$(ssh -t ec2-user@$DST_IP sudo git -C $DST/$dir show HEAD --stat --no-color | grep commit | tr '[:space:]' '\n' | grep -v commit | tr -d '[:space:]')
+    site1_commit=$(ssh -t ec2-user@$SITE1_IP sudo git --no-pager -C $SITE1/$dir ls-remote -h ./ master | col | awk '{print $1}')
+    site2_commit=$(ssh -t ec2-user@$SITE2_IP sudo git --no-pager -C $SITE2/$dir ls-remote -h ./ master | col | awk '{print $1}')
 
-    echo "$src_commit $dst_commit"
-    if [[ "$src_commit" == "$dst_commit" ]]
+    echo "$site1_commit $site2_commit"
+    if [[ "$site1_commit" == "$site2_commit" ]]
     then
         success "MATCH"
     else
