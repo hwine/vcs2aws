@@ -37,6 +37,9 @@ var_check() {
 SITE1="/home/ec2-user/live/vcs_sync/build/target"
 SITE2="/home/vcs2vcs/vcs_sync/build/target"
 
+SITE1_USER="ec2-user"
+SITE2_USER="vcs2vcs"
+
 var_check
 
 # Assumes l10n occurs in name
@@ -45,8 +48,8 @@ do
 
     dir=$(echo $dir | tr -d [:space:])
     info "Checking $dir"
-    site1_commit=$(ssh -t ec2-user@$SITE1_IP sudo git --no-pager -C $SITE1/$dir ls-remote -h ./ master | col | awk '{print $1}')
-    site2_commit=$(ssh -t ec2-user@$SITE2_IP sudo git --no-pager -C $SITE2/$dir ls-remote -h ./ master | col | awk '{print $1}')
+    site1_commit=$(ssh -t ec2-user@$SITE1_IP sudo -u $SITE1_USER git --no-pager -C $SITE1/$dir ls-remote -h ./ master | col | awk '{print $1}')
+    site2_commit=$(ssh -t ec2-user@$SITE2_IP sudo -u $SITE2_USER git --no-pager -C $SITE2/$dir ls-remote -h ./ master | col | awk '{print $1}')
 
     echo "$site1_commit $site2_commit"
     if [[ "$site1_commit" == "$site2_commit" ]]
