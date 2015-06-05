@@ -1,9 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script to quickly spot check Modern b/w AWS and production
 # expects $SITE1_IP and $SITE2_IP to be exported, or set inside the script before use.
 # TODO: Add usage()
 
 #set -x
+
+# OSX 10.10 still ships with bash v3
+[[ $BASH_VERSINFO -ge 4 ]] || {
+    echo "bash version 4 needed, you have $BASH_VERSINFO"
+    exit 1
+} 1>&2
 
 # Coloured logging
 info() {
