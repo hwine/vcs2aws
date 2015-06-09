@@ -6,24 +6,18 @@
 
   tasks:
 
-
     # Install required packages
     # Using https://bugzil.la/924716 as reference
-    - name: install requiered packages; 
+    - name: install required packages; 
       yum: 
         name: "{{item}}"
         state: present
       with_items:
         - gcc
         - git
-        - mercurial
-        - postfix
         - ca-certificates
-
-    - name: remove ssmtp in favour of postfix
-      yum:
-        name: ssmtp
-        state: absent
+        # mercurial needed for initial pull of mozharness
+        - mercurial
 
     # Package names changed here for yum
     - name: install python extras
@@ -31,6 +25,11 @@
       with_items:
         - python27-pip
         - python27-devel
+
+    - name: install pip.conf
+      # works around https://bugzil.la/1152749
+      file: state=directory mode=0755 path=~/.pip
+    - copy: src=files/app_pip.conf dest=~/.pip/pip.conf
 
     - name: install virtualenv 
       pip: name=virtualenv state=present
