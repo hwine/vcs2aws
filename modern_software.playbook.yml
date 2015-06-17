@@ -60,6 +60,12 @@
   remote_user: ec2-user
   sudo: true
   sudo_user: vcs2vcs
+  vars:
+    - dir_list:
+        - vcs_sync
+        - vcssync1
+        - vcssync2
+        - vcs_sync_build
 
   tasks:
 
@@ -67,10 +73,7 @@
       file:
         path: "/opt/vcs2vcs/{{ item }}"
         state: directory
-      with_items:
-        - vcs_sync
-        - vcssync1
-        - vcssync2
+      with_items: dir_list
 
     - name: setup symlinks from ~vcs2vcs to data-disk (/opt/vcs2vcs/)
       file:
@@ -78,7 +81,4 @@
         dest: "~/{{ item }}"
         state: link
         force: true
-      with_items:
-        - vcs_sync
-        - vcssync1
-        - vcssync2
+      with_items: dir_list
