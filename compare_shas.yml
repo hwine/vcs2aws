@@ -7,9 +7,11 @@
   become_user: vcs2vcs
   tasks:
     - name: pack mapfiles
-      shell: tar czf /tmp/ansible.tgz -C /tmp/vcs-sync *-mapfile
+      command: tar czf /tmp/ansible.tgz *-mapfile
       args:
+        chdir: /tmp/vcs-sync
         creates: /tmp/ansible.tgz
+        warn: False
     - name: fetch created tarball
       fetch: 
         src: /tmp/ansible.tgz
@@ -26,6 +28,8 @@
     - file: path=fetch/prod state=directory
     - name: expand production files
       command: tar xzf fetch/{{ item }}.mapfile.tgz -C fetch/prod
+      args:
+        warn: False
       with_items: 
         - gd1
         - gd3
@@ -36,3 +40,13 @@
         - vsl
     - name: checking for diffs
       command: diff -r --brief fetch/prod fetch/stage
+      args:
+        warn: False
+    - name: check sizes
+      tags: check
+      shell: wc -l * >../wc.{{ item }}
+      args:
+        chdir: fetch/{{ item }}
+      with_items:
+        - prod
+        - stage
