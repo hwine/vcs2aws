@@ -1,0 +1,32 @@
+# host names are mapped in ~/.ssh/config for now
+# e.g.:
+;Host vsm 52.24.123.175
+;    Hostname 52.24.123.175
+;Host vs-live 52.24.201.170
+;    Hostname 52.24.201.170
+;Host vsl 52.11.210.32
+;    Hostname 52.11.210.32
+;
+;Host vs* 52.*
+;    User ec2-user
+;    ProxyCommand ssh -T people nc %h %p 2>/dev/null
+;Host gitdev1 gd1
+;    HostName github-sync1.dmz.scl3.mozilla.com
+;Host gitdev3 gd3 github-sync3.dmz.scl3.mozilla.com
+;    HostName github-sync3.dmz.scl3.mozilla.com
+
+[src_host]
+# this can vary depending on which job is being copied
+# can be specified on 
+gd3
+
+[dst_host]
+vsl
+
+[all:children]
+src_host
+dst_host
+
+[all:vars]
+repos = set-using-command-line
+

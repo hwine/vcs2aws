@@ -1,0 +1,64 @@
+#!/usr/bin/env ansible-playbook -i hosts
+# copy a missing conversion directory from scl3 host to aws
+---
+#- hosts: src_host:dst_host
+#  vars:
+
+
+- hosts: src_host
+  tags: pull_down
+  become: yes
+  become_user: vcs2vcs
+  tasks:
+    - name: build tarball
+      command: tar czf /tmp/repo.{{ item }}.tgz {{ item }}
+      args:
+        chdir: ~/repos/
+        creates: /tmp/repo.{{ item }}.tgz
+      with_items: repos
+    - name: copy tarball local
+      fetch:
+        src: /tmp/repo.{{ item }}.tgz
+        dest: /tmp/
+        fail: True
+        flat: True
+      with_items: repos
+    - name: remove file
+      file: >
+        path=/tmp/repo.{{ item }}.tgz
+        state=absent
+      with_items: repos
+
+- hosts: dst_host
+  tags: push_up
+  become: yes
+  become_user: vcs2vcs
+  tasks:
+    - name: copy to target
+      copy: 
+        src: /tmp/repo.{{ item }}.tgz
+        dest: /tmp/
+        force: False
+      with_items: repos
+    - name: unpack
+      command: tar xzf /tmp/repo.{{ item }}.tgz
+      args:
+        chdir: ~/repos/
+        creates: ~/repos/{{ item }}
+      with_items: repos
+    - name: clean up remote
+      file: >
+        path=/tmp/repo.{{ item }}.tgz
+        state=absent
+      with_items: repos
+
+- hosts: localhost
+  connection: local
+  tags: push_up
+  tasks:
+    - name: clean up local
+      file: >
+        path=/tmp/repo.{{ item }}.tgz
+        state=absent
+      with_items: repos
+
