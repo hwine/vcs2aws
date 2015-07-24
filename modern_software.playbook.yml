@@ -100,7 +100,15 @@
       tags: update_bundleclone
       ini_file:
         dest: ~/.hgrc
-        section: extensions
-        option: bundleclone
-        value: ~/.hgext/bundleclone.py
         state: present
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+      with_items:
+        - section: extensions
+          option: bundleclone
+          value: ~/.hgext/bundleclone.py
+        - section: bundleclone
+          option: prefers
+          value: ec2region=us-west-2, stream=revlogv1
+# vim: sw=2 sts=2 ts=2 et :
