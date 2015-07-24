@@ -1,5 +1,5 @@
 ---
-- name: Base OS steup
+- name: Base OS setup
   hosts: tag_system_modern
   remote_user: ec2-user
   sudo: true
@@ -25,11 +25,6 @@
       with_items:
         - python27-pip
         - python27-devel
-
-    - name: install pip.conf
-      # works around https://bugzil.la/1152749
-      file: state=directory mode=0755 path=~/.pip
-    - copy: src=files/app_pip.conf dest=~/.pip/pip.conf
 
     - name: install virtualenv 
       pip: name=virtualenv state=present
@@ -82,3 +77,30 @@
         state: link
         force: true
       with_items: dir_list
+
+    - name: install pip.conf
+      # works around https://bugzil.la/1152749
+      file: state=directory mode=0755 path=~/.pip
+    - copy: src=files/app_pip.conf dest=~/.pip/pip.conf
+
+      # hg extensions work best with an absolute path
+    - name: install bundleclone
+      tags: update_bundleclone
+      file:
+        dest: ~/.hgext
+        state: directory
+        mode: 0755
+    - tags: update_bundleclone
+      copy:
+        src: files/bundleclone.py
+        dest: ~/.hgext/bundleclone.py
+        mode: 0444
+
+    - name: install hgrc
+      tags: update_bundleclone
+      ini_file:
+        dest: ~/.hgrc
+        section: extensions
+        option: bundleclone
+        value: ~/.hgext/bundleclone.py
+        state: present
