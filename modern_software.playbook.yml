@@ -111,4 +111,7 @@
         - section: bundleclone
           option: prefers
           value: ec2region=us-west-2, stream=revlogv1
+        - section: ui
+          option: traceback
+          value: True
 # vim: sw=2 sts=2 ts=2 et :
