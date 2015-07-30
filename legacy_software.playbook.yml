@@ -118,12 +118,13 @@
         dest: ~/.bash_profile
         src: files/legacy_bash_profile
         mode: 0644
+        backup: yes
 
     - name: setup ssh (part 1/2)
       file: dest=~/.ssh state=directory mode=0700
 
     - name: setup ssh (part 2/2)
-      copy: dest=~/.ssh/config mode=0600 src=files/legacy_ssh_config
+      copy: dest=~/.ssh/config mode=0600 src=files/legacy_ssh_config backup=yes
 
     - name: install configs repo
       # this should go on data disk
