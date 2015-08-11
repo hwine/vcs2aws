@@ -1,3 +1,8 @@
+Host github-private
+    # credentials for accessing private repos on github
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/releng-github-id_rsa
 Host git.m.o
     HostName git.mozilla.org
     IdentityFile $HOME/.ssh/vcs-sync_rsa
