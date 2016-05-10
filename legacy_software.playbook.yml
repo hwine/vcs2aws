@@ -142,6 +142,7 @@
       tags: update_crontabs
       sudo_user: root
       copy: dest=/etc/cron.d/vcs2vcs.cron src=files/legacy_crontab
+      tags: cron_update
 
     - name: setup log rotation
       sudo_user: root

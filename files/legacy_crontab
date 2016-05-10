@@ -6,8 +6,5 @@ PATH=/opt/vcs2vcs/bin:/usr/bin:/bin
 7,27,47 * * * * vcs2vcs ~vcs2vcs/bin/check_process_delay --fix
 @hourly $HOME/bin/alert_major_errors --email release+vcs2vcs@mozilla.com
 
-# update l10n & gaia mapfiles as needed
-*/5 * * * * vcs2vcs ~vcs2vcs/bin/combine_mapfiles; ~vcs2vcs/bin/combine_mapfiles --prefix integration-gaia --master gaia-mapfile
-
 # work around AWS /tmp/ expiration policy
 11   * * * * vcs2vcs ~vcs2vcs/bin/setup_bitbucket &>/dev/null ; ~vcs2vcs/bin/setup_github &>/dev/null ; ~vcs2vcs/bin/setup_mirror-writer &>/dev/null
