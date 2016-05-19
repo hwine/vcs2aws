@@ -144,6 +144,11 @@
       copy: dest=/etc/cron.d/vcs2vcs.cron src=files/legacy_crontab
       tags: cron_update
 
+    - name: monitor connectivity via cron
+      sudo_user: root
+      copy: dest=/etc/cron.d/connectivity.cron src=files/reachability_crontab
+      tags: cron_update
+
     - name: setup log rotation
       sudo_user: root
       file: dest=/etc/logrotate.d/logrotate-legacy.conf src=~vcs2vcs/etc/logrotate-legacy.conf state=link

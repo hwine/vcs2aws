@@ -121,4 +121,9 @@
       copy: dest=/etc/cron.d/vcs2vcs.cron src=files/modern_crontab
       tags: cron_update
 
+    - name: monitor connectivity via cron
+      sudo_user: root
+      copy: dest=/etc/cron.d/connectivity.cron src=files/reachability_crontab
+      tags: cron_update
+
 # vim: sw=2 sts=2 ts=2 et :

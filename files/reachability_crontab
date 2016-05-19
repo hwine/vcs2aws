@@ -1,0 +1,12 @@
+# Ensure we can get to *.m.o properties as needed (i.e. are not
+# blacklisted)
+
+MAILTO=releng-ops-trial+cron@mozilla.com
+
+# Check connectivity every hour
+@hourly vcs2vcs curl --fail https://hg.mozilla.org/ &>/dev/null && touch /home/vcs2vcs/access-hg.m.o
+@hourly vcs2vcs curl --fail https://git.mozilla.org/ &>/dev/null && touch /home/vcs2vcs/access-git.m.o
+
+# Report if > 2 hour since last connect
+@hourly vcs2vs find /home/vcs2vcs -maxdepth 1 -mmin -120 -name access-hg.m.o -exec "ls -l access-hg.m.o | mail -s 'No access to hg.m.o'"
+@hourly vcs2vs find /home/vcs2vcs -maxdepth 1 -mmin -120 -name access-git.m.o -exec "ls -l access-git.m.o | mail -s 'No access to git.m.o'"
