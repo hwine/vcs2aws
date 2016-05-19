@@ -1,0 +1,16 @@
+MAILFROM=developer-services@mozilla.org
+#MAILFROM=hwine@mozilla.org
+MAILTO=releng-ops-trial+cron@mozilla.com
+# l10n - Every 4 minutes
+# disable per https://bugzil.la/1267846
+#2-59/4 * * * * /home/vcs2vcs/vcs_sync/run_l10n_sync.sh >/dev/null 2>&1
+
+# gecko-dev - Every 4 odd minutes
+1-59/4 * * * * vcs2vcs /home/vcs2vcs/vcssync1/run_beagle.sh >/dev/null 2>&1
+
+# project-branches - Every 4 even minutes
+0-59/4 * * * * vcs2vcs /home/vcs2vcs/vcssync2/run_projects.sh >/dev/null 2>&1
+
+# build repos - Every 4 odd minutes
+3-59/4 * * * * vcs2vcs /home/vcs2vcs/vcs_sync_build/run_build_repos_sync.sh >/dev/null 2>&1
+
